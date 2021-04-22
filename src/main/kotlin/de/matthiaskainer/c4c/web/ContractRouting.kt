@@ -1,7 +1,10 @@
 package de.matthiaskainer.c4c.web
 
+import arrow.core.flatMap
+import de.matthiaskainer.c4c.core.toEither
 import de.matthiaskainer.c4c.core.toResponse
-import de.matthiaskainer.c4c.core.safeBlock
+import de.matthiaskainer.c4c.domain.commands.CreateNewContract
+import de.matthiaskainer.c4c.domain.commands.CreateNewTestResult
 import de.matthiaskainer.c4c.domain.toContractId
 import de.matthiaskainer.c4c.repository.ContractRepository
 import io.ktor.application.*
@@ -15,8 +18,10 @@ class ContractRouting(
 ) {
     fun Routing.contract(path: String) {
         post(path) {
-            safeBlock {
-                repository.insert(call.receive())
+            toEither {
+                call.receive<CreateNewContract>()
+            }.flatMap {
+                repository.insert(it)
             }.toResponse(call, HttpStatusCode.Created)
         }
         get(path) {
@@ -26,24 +31,29 @@ class ContractRouting(
             )
         }
         get("${path}/{id}") {
-            safeBlock {
+            call.parameters["id"]!!.toContractId().flatMap {
                 repository
-                    .getById(call.parameters["id"]?.toContractId())
+                    .getById(it)
             }.toResponse(call, HttpStatusCode.OK)
         }
         get("${path}/{id}/testResults") {
-            safeBlock {
+            call.parameters["id"]!!.toContractId().flatMap {
                 repository
-                    .getById(call.parameters["id"]?.toContractId())
+                    .getById(it)
             }.toResponse(call, HttpStatusCode.OK) { it.testResults }
         }
         put("${path}/{id}/testResults") {
-            safeBlock {
-                repository
-                    .addTestResult(
-                        call.parameters["id"]?.toContractId(),
-                        call.receive()
-                    )
+            toEither {
+                call.receive<CreateNewTestResult>()
+            }.flatMap {
+                call.parameters["id"]!!.toContractId()
+                    .flatMap { contractId ->
+                        repository
+                            .addTestResult(
+                                contractId,
+                                it
+                            )
+                    }
             }.toResponse(call, HttpStatusCode.Accepted)
         }
     }

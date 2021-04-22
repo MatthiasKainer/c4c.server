@@ -1,6 +1,7 @@
 package de.matthiaskainer.c4c.repository
 
 import arrow.core.Either
+import de.matthiaskainer.c4c.core.toEither
 import de.matthiaskainer.c4c.domain.*
 import de.matthiaskainer.c4c.domain.commands.CreateNewContract
 import de.matthiaskainer.c4c.domain.commands.CreateNewTestResult
@@ -34,9 +35,9 @@ fun toContract(it: ResultRow) =
     )
 
 class ContractRepository {
-    fun insert(c: CreateNewContract): Either<ContractProblem, ContractId> =
-        runCatching {
-            Either.Right(transaction {
+    suspend fun insert(c: CreateNewContract): Either<ContractProblem, ContractId> =
+        toEither(ContractProblem.ContractCreationFailed) {
+            transaction {
                 val id = ContractTable.insert {
                     it[provider] = c.provider
                     it[consumer] = c.consumer
@@ -47,8 +48,8 @@ class ContractRepository {
                     this[FileLineTable.contractId] = id
                 }
                 id
-            }.toContractId())
-        }.getOrElse { Either.Left(ContractProblem.ContractCreationFailed) }
+            }.toContractId()
+        }
 
 
     fun findAll(): List<Contract> =

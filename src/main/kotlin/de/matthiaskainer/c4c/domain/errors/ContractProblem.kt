@@ -6,4 +6,5 @@ sealed class ContractProblem {
     object MissingIdForContract : ContractProblem()
     object InvalidRequestData: ContractProblem()
     object UnhandledIssue: ContractProblem()
+    object InvalidContractId : ContractProblem()
 }
