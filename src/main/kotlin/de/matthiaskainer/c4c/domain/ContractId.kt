@@ -8,9 +8,8 @@ data class ContractId(
     @get:JsonValue val value: Int
 )
 
-fun String.toContractId() = this.toIntOrNull().let {
-    it?.let { Either.Right(ContractId(it)) }
-        ?: Either.Left(ContractProblem.InvalidContractId)
-}
+fun String?.toContractId() = this?.toIntOrNull()?.let {
+    Either.Right(ContractId(it))
+}  ?: Either.Left(ContractProblem.InvalidContractId)
 
 fun Int.toContractId() = ContractId(this)

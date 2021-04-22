@@ -31,13 +31,13 @@ class ContractRouting(
             )
         }
         get("${path}/{id}") {
-            call.parameters["id"]!!.toContractId().flatMap {
+            call.parameters["id"].toContractId().flatMap {
                 repository
                     .getById(it)
             }.toResponse(call, HttpStatusCode.OK)
         }
         get("${path}/{id}/testResults") {
-            call.parameters["id"]!!.toContractId().flatMap {
+            call.parameters["id"].toContractId().flatMap {
                 repository
                     .getById(it)
             }.toResponse(call, HttpStatusCode.OK) { it.testResults }
@@ -46,7 +46,7 @@ class ContractRouting(
             toEither {
                 call.receive<CreateNewTestResult>()
             }.flatMap {
-                call.parameters["id"]!!.toContractId()
+                call.parameters["id"].toContractId()
                     .flatMap { contractId ->
                         repository
                             .addTestResult(
