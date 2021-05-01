@@ -3,6 +3,86 @@
 Build using [Ktor](https://ktor.io/), [Arrow](https://arrow-kt.io/)
 and [exposed](https://github.com/JetBrains/Exposed).
 
+## Workflows
+
+### Create and fulfill contract
+
+```text
+      +-------------+  +-------------+  +--------------+
+      |             |  |             |  |              |
+      | Consumer    |  | Broker      |  | Provider     |
+      |             |  |             |  |              |
+      +-----+-------+  +------+------+  +-------+------+
+            |                 |                 |
++-----------+                 |                 |
+|           |                 |                 |
+|create     |                 |                 |
+|test       |                 |                 |
+|           |                 |                 |
++-----------> mock            |                 |
+            | component       |                 |
+            |                 |                 |
+            | create contract |                 |
+            +----------------->                 |
+            |                 |                 |
+            |                 |                 |
+            |                 +----------------->
+            |                 |                 |
+            |                 | test fails      +------------+
+            |                 <-----------------+            |
+            |                 | test fails      | implement  |
+            |                 <-----------------+ component  |
+            |                 |                 | v1.0.0     |
+            |                 |                 <------------+
+            |                 | test passes     |
+            |                 <-----------------+
+            |                 |                 |
+            |                 |                 |
+```
+
+### Provider has to update contract
+
+```text
+      +-------------+  +-------------+  +--------------+
+      |             |  |             |  |              |
+      | Consumer    |  | Broker      |  | Provider     |
+      |             |  |             |  |              |
+      +-----+-------+  +------+------+  +-------+------+
+            |                 |                 |
+            |                 | test passes     |
+            |                 <-----------------+
+            |                 |                 |
+            |                 | test fails      +------------+
+            |                 <-----------------+            |
+            |                 | test fails      | implement  |
+            |                 <-----------------+ component  |
+            |                 |                 | v1.0.1     |
+            |                 |                 <------------+
+            |                 | test fails      |
+            |                 <-----------------+
+            |     go talk to the other team     |
+            <-----------------+-----------------+
+            |                 |                 |
++-----------+                 |                 |
+|           |                 |                 |
+|create     |                 |                 |
+|test       |                 |                 |
+|           |                 |                 |
++-----------> mock            |                 |
+            | component       |                 |
+            |                 |                 |
+            | update contract |                 |
+            +----------------->                 |
+            |                 |  test passes    |
+            |                 <-----------------+
+            |                 |                 |
+            |                 |                 |
+```
+
+### Update to a new version, driven by provider
+
+
+
 ## Running
 
 ```

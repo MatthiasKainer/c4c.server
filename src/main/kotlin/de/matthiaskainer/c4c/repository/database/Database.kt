@@ -3,7 +3,7 @@ package de.matthiaskainer.c4c.repository.database
 import de.matthiaskainer.c4c.core.DatabaseConfiguration
 import de.matthiaskainer.c4c.domain.TestRunResult
 import de.matthiaskainer.c4c.repository.domain.ContractTable
-import de.matthiaskainer.c4c.repository.domain.FileLineTable
+import de.matthiaskainer.c4c.repository.domain.VersionTable
 import de.matthiaskainer.c4c.repository.domain.TestResultTable
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.batchInsert
@@ -24,24 +24,25 @@ fun initDatasource(databaseConfiguration: DatabaseConfiguration, clean: Boolean 
     connect(databaseConfiguration)
 
     transaction {
-        if (clean) SchemaUtils.drop(ContractTable, FileLineTable, TestResultTable)
-        SchemaUtils.create(ContractTable, FileLineTable, TestResultTable)
+        if (clean) SchemaUtils.drop(ContractTable, VersionTable, TestResultTable)
+        SchemaUtils.create(ContractTable, VersionTable, TestResultTable)
 
         val demoContract = ContractTable.insert {
             it[consumer] = "consumer"
             it[provider] = "provider"
-            it[element] = "element"
+            it[element] = "element-example"
         } get ContractTable.id
 
-        FileLineTable.batchInsert(listOf("contract")) { line ->
-            this[FileLineTable.line] = line
-            this[FileLineTable.contractId] = demoContract
-        }
+        val versionId = VersionTable.insert {
+            it[version] = "1.0.0"
+            it[lines] = "const some='lines';\n"
+            it[contractId] = demoContract
+        } get VersionTable.id
 
         TestResultTable.insert {
             it[executionDate] = LocalDateTime.of(2021, 6, 12, 0, 0)
             it[result] = TestRunResult.Success.toString()
-            it[version] = "1.0.0.0"
+            it[version] = versionId
             it[contractId] = demoContract
         }
     }
